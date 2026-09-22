@@ -6,6 +6,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.CameraType;
+import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix4f;
 import net.minecraft.core.BlockPos;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
@@ -29,6 +31,7 @@ public class LocomotionClientGameTest implements FabricClientGameTest {
                 }
             });
             context.takeScreenshot("locomotion-first-person");
+            assertThirdPersonWalking(context);
             context.getInput().holdKeyFor(options -> options.keyUp, 20);
             context.getInput().holdKeyFor(options -> options.keyShift, 10);
             context.getInput().pressKey(options -> options.keyJump);
@@ -88,4 +91,40 @@ public class LocomotionClientGameTest implements FabricClientGameTest {
             context.waitTicks(5);
         }
     }
+
+    private static void assertThirdPersonWalking(ClientGameTestContext context) {
+        context.runOnClient(client -> client.options.setCameraType(CameraType.THIRD_PERSON_FRONT));
+        context.getInput().holdKey(options -> options.keyUp);
+        try {
+            context.waitTicks(10);
+            var startPosition = context.computeOnClient(client -> client.player.position());
+            Matrix4f previous = null;
+            boolean legMoved = false;
+            for (int sample = 0; sample < 12; sample++) {
+                context.waitTicks(2);
+                Matrix4f current = context.computeOnClient(client -> {
+                    var model = client.getEntityRenderDispatcher().getPlayerRenderer(client.player).getModel();
+                    PoseStack stack = new PoseStack();
+                    model.rightLeg.translateAndRotate(stack);
+                    return new Matrix4f(stack.last().pose());
+                });
+                if (previous != null && !previous.equals(current, 0.01f)) {
+                    legMoved = true;
+                }
+                previous = current;
+            }
+            double distance = context.computeOnClient(client -> client.player.position().distanceTo(startPosition));
+            if (distance < 1.0) {
+                throw new AssertionError("Walking regression test must actually move the player");
+            }
+            context.takeScreenshot("locomotion-third-person-walking");
+            if (!legMoved) {
+                throw new AssertionError("Third-person leg stayed frozen while the player walked");
+            }
+        } finally {
+            context.getInput().releaseKey(options -> options.keyUp);
+            context.runOnClient(client -> client.options.setCameraType(CameraType.FIRST_PERSON));
+        }
+    }
+
 }
