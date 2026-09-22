@@ -18,7 +18,6 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -51,8 +50,6 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
 
     private final Minecraft minecraft;
     private final EntityRenderDispatcher entityRenderDispatcher;
-    private final ItemRenderer itemRenderer;
-    private final BlockRenderDispatcher blockRenderer;
     private final ItemModelResolver itemModelResolver;
     private final JointAnimatorDispatcher jointAnimatorDispatcher;
 
@@ -64,8 +61,6 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
     public FirstPersonPlayerRenderer(EntityRendererProvider.Context context) {
         this.minecraft = Minecraft.getInstance();
         this.entityRenderDispatcher = context.getEntityRenderDispatcher();
-        this.itemRenderer = minecraft.getItemRenderer();
-        this.blockRenderer = context.getBlockRenderDispatcher();
         this.itemModelResolver = context.getItemModelResolver();
         this.jointAnimatorDispatcher = JointAnimatorDispatcher.getInstance();
     }
@@ -134,112 +129,6 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
 
 
         poseStack.popPose();
-    }
-
-    public void render(float partialTicks, PoseStack poseStack, SubmitNodeCollector nodeCollector, LocalPlayer player, int combinedLight) {
-
-        CURRENT_PARTIAL_TICKS = partialTicks;
-        JointAnimatorDispatcher jointAnimatorDispatcher = JointAnimatorDispatcher.getInstance();
-
-        JointAnimatorDispatcher.getInstance().getFirstPersonPlayerDataContainer().ifPresent(
-                dataContainer -> jointAnimatorDispatcher.getInterpolatedFirstPersonPlayerPose().ifPresent(
-                        animationPose -> {
-
-                            JointChannel rightArmPose = animationPose.getJointChannel(FirstPersonJointAnimator.RIGHT_ARM_JOINT);
-                            JointChannel leftArmPose = animationPose.getJointChannel(FirstPersonJointAnimator.LEFT_ARM_JOINT);
-                            JointChannel rightItemPose = animationPose.getJointChannel(FirstPersonJointAnimator.RIGHT_ITEM_JOINT);
-                            JointChannel leftItemPose = animationPose.getJointChannel(FirstPersonJointAnimator.LEFT_ITEM_JOINT);
-
-                            poseStack.pushPose();
-                            poseStack.mulPose(Axis.ZP.rotationDegrees(180));
-
-//                            poseStack.mulPose(Axis.YP.rotationDegrees(-player.getViewYRot(partialTicks)));
-//                            poseStack.mulPose(Axis.XP.rotationDegrees(-player.getViewXRot(partialTicks)));
-
-                            //? if >= 1.21.9 {
-                            AvatarRenderer<AbstractClientPlayer> playerRenderer = this.entityRenderDispatcher.getPlayerRenderer(player);
-                            //?} else {
-                            /*PlayerRenderer playerRenderer = (PlayerRenderer)this.entityRenderDispatcher.getRenderer(abstractClientPlayer);
-                            *///?}
-
-                            PlayerModel playerModel = playerRenderer.getModel();
-                            playerModel.resetPose();
-
-                            ((MatrixModelPart)(Object) playerModel.rightArm).locomotion$setMatrix(rightArmPose.getTransform());
-                            ((MatrixModelPart)(Object) playerModel.leftArm).locomotion$setMatrix(leftArmPose.getTransform());
-
-                            playerModel.body.visible = false;
-
-                            this.renderArm(player, playerModel, HumanoidArm.LEFT, poseStack, nodeCollector, combinedLight);
-                            this.renderArm(player, playerModel, HumanoidArm.RIGHT, poseStack, nodeCollector, combinedLight);
-
-                            //this.entityRenderDispatcher.render(abstractClientPlayer, 0, 0, 0, partialTicks, poseStack, buffer, combinedLight);
-
-                            boolean leftHanded = this.minecraft.options.mainHand().get() == HumanoidArm.LEFT;
-
-//                            ItemStack mainHandRenderedItem = dataContainer.getDriverValue(leftHanded ? FirstPersonDrivers.RENDERED_MAIN_HAND_ITEM : FirstPersonDrivers.RENDERED_OFF_HAND_ITEM);
-//                            ItemStack offHandRenderedItem = dataContainer.getDriverValue(leftHanded ? FirstPersonDrivers.RENDERED_OFF_HAND_ITEM : FirstPersonDrivers.RENDERED_MAIN_HAND_ITEM);
-//                            ItemStack mainHandItem = dataContainer.getDriverValue(leftHanded ? FirstPersonDrivers.MAIN_HAND_ITEM : FirstPersonDrivers.OFF_HAND_ITEM);
-//                            ItemStack offHandItem = dataContainer.getDriverValue(leftHanded ? FirstPersonDrivers.OFF_HAND_ITEM : FirstPersonDrivers.MAIN_HAND_ITEM);
-
-                            Identifier leftHandGenericItemPoseIdentifier = dataContainer.getDriverValue(FirstPersonDrivers.getGenericItemPoseDriver(leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND));
-                            Identifier rightHandGenericItemPoseIdentifier = dataContainer.getDriverValue(FirstPersonDrivers.getGenericItemPoseDriver(!leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND));
-                            FirstPersonGenericItems.GenericItemPoseDefinition leftHandGenericItemPoseDefinition = FirstPersonGenericItems.getOrThrowFromIdentifier(leftHandGenericItemPoseIdentifier);
-                            FirstPersonGenericItems.GenericItemPoseDefinition rightHandGenericItemPoseDefinition = FirstPersonGenericItems.getOrThrowFromIdentifier(rightHandGenericItemPoseIdentifier);
-                            Identifier leftHandPoseIdentifier = dataContainer.getDriverValue(FirstPersonDrivers.getHandPoseDriver(leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND));
-                            Identifier rightHandPoseIdentifier = dataContainer.getDriverValue(FirstPersonDrivers.getHandPoseDriver(!leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND));
-                            FirstPersonHandPoses.HandPoseDefinition leftHandPose = FirstPersonHandPoses.getOrThrowFromIdentifier(leftHandPoseIdentifier);
-                            FirstPersonHandPoses.HandPoseDefinition rightHandPose = FirstPersonHandPoses.getOrThrowFromIdentifier(rightHandPoseIdentifier);
-
-                            ItemRenderType leftHandItemRenderType = leftHandPoseIdentifier == FirstPersonHandPoses.GENERIC_ITEM ? leftHandGenericItemPoseDefinition.itemRenderType() : leftHandPose.itemRenderType();
-                            ItemRenderType rightHandItemRenderType = rightHandPoseIdentifier == FirstPersonHandPoses.GENERIC_ITEM ? rightHandGenericItemPoseDefinition.itemRenderType() : rightHandPose.itemRenderType();
-
-                            ItemStack mainHandItem = getItemStackInHandToRender(dataContainer, player, InteractionHand.MAIN_HAND);
-                            ItemStack offHandItem = getItemStackInHandToRender(dataContainer, player, InteractionHand.OFF_HAND);
-
-                            ItemStack rightHandItem = leftHanded ? offHandItem : mainHandItem;
-                            ItemStack leftHandItem = leftHanded ? mainHandItem : offHandItem;
-
-                            this.renderItem(
-                                    player,
-                                    rightHandItem,
-                                    poseStack,
-                                    rightItemPose,
-                                    nodeCollector,
-                                    combinedLight,
-                                    HumanoidArm.RIGHT,
-                                    !leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
-                                    rightHandItemRenderType
-                            );
-                            this.renderItem(
-                                    player,
-                                    leftHandItem,
-                                    poseStack,
-                                    leftItemPose,
-                                    nodeCollector,
-                                    combinedLight,
-                                    HumanoidArm.LEFT,
-                                    leftHanded ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
-                                    leftHandItemRenderType
-                            );
-
-
-//                            if (!this.minecraft.isPaused()) {
-//                                LocomotionMain.LOGGER.info(rightItemPose.getTransform().getScale(new Vector3f()));
-//                            }
-
-                            //this.renderItemInHand(abstractClientPlayer, ItemStack.EMPTY, poseStack, HumanoidArm.LEFT, animationPose, bufferSource, i);
-
-
-                            //playerRenderer.renderRightHand(poseStack, bufferSource, i, abstractClientPlayer);
-                            //poseStack.popPose();
-                            poseStack.popPose();
-                        }
-                )
-        );
-
-        this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-        this.minecraft.renderBuffers().bufferSource().endBatch();
     }
 
     private static ItemStack getItemStackInHandToRender(AnimationDataContainer dataContainer, AbstractClientPlayer localPlayer, InteractionHand hand) {

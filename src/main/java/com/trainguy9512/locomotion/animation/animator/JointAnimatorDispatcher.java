@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -136,7 +137,7 @@ public class JointAnimatorDispatcher {
         if (potentialJointAnimator.isPresent()) {
             BlockEntityJointAnimator<T> jointAnimator = potentialJointAnimator.get();
             AnimationDataContainer dataContainer = AnimationDataContainer.of(jointAnimator);
-            dataContainer.getDriver(BLOCK_ENTITY_TYPE_DRIVER).setValue(BlockEntityType.getKey(type));
+            dataContainer.getDriver(BLOCK_ENTITY_TYPE_DRIVER).setValue(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type));
             return Optional.of(dataContainer);
         }
         return Optional.empty();
@@ -157,7 +158,7 @@ public class JointAnimatorDispatcher {
     }
 
     private static boolean blockEntityIsEnabledInConfig(BlockEntityType<?> type) {
-        Identifier typeIdentifier = BlockEntityType.getKey(type);
+        Identifier typeIdentifier = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type);
         assert typeIdentifier != null;
         return LocomotionMain.CONFIG.data().blockEntities.enabledBlockEntities.getOrDefault(typeIdentifier.toString(), true);
     }
@@ -184,7 +185,7 @@ public class JointAnimatorDispatcher {
             if (this.blockEntityAnimationDataContainerStorage.containsKey(packedBlockPos)) {
 
                 AnimationDataContainer dataContainer = this.blockEntityAnimationDataContainerStorage.get(packedBlockPos);
-                if (dataContainer.getDriverValue(BLOCK_ENTITY_TYPE_DRIVER) == BlockEntityType.getKey(type)) {
+                if (dataContainer.getDriverValue(BLOCK_ENTITY_TYPE_DRIVER) == BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)) {
                     // If the block is within range and its type matches the requested type, return it.
                     return Optional.of(dataContainer);
                 } else {

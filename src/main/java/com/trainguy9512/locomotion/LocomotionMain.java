@@ -7,9 +7,8 @@ import com.trainguy9512.locomotion.animation.animator.entity.ThirdPersonPlayerJo
 import com.trainguy9512.locomotion.animation.animator.entity.firstperson.FirstPersonJointAnimator;
 import com.trainguy9512.locomotion.config.LocomotionConfig;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,12 +45,12 @@ public class LocomotionMain {
 	private static void registerAnimators() {
 		JointAnimatorRegistry.registerFirstPersonPlayerJointAnimator(new FirstPersonJointAnimator());
 
-		JointAnimatorRegistry.registerEntityJointAnimator(EntityType.PLAYER, new ThirdPersonPlayerJointAnimator());
+		JointAnimatorRegistry.registerEntityJointAnimator(EntityTypes.PLAYER, new ThirdPersonPlayerJointAnimator());
 
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.ENDER_CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.TRAPPED_CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.SHULKER_BOX, new ShulkerBoxJointAnimator());
+		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityTypes.CHEST, new ChestJointAnimator<>());
+		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityTypes.ENDER_CHEST, new ChestJointAnimator<>());
+		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityTypes.TRAPPED_CHEST, new ChestJointAnimator<>());
+		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityTypes.SHULKER_BOX, new ShulkerBoxJointAnimator());
 	}
 
 	/*

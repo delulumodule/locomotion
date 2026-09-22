@@ -19,7 +19,7 @@ public class LocomotionFabric implements ClientModInitializer {
     }
 
     private static void registerResourceReloader() {
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(LocomotionResources.RELOADER_IDENTIFIER, new LocomotionResources());
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(LocomotionResources.RELOADER_IDENTIFIER, new LocomotionResources());
     }
 
     private static void registerDebugEntries() {

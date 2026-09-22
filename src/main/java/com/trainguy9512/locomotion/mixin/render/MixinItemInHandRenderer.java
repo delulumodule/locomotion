@@ -30,7 +30,7 @@ public class MixinItemInHandRenderer {
     @Shadow @Final private Minecraft minecraft;
 
     @Inject(
-            method = "renderHandsWithItems",
+            method = "submitHandsWithItems",
             at = @At("HEAD")
     )
     public void locomotion$overrideFirstPersonRendering(
@@ -49,7 +49,7 @@ public class MixinItemInHandRenderer {
 
     // Disables camera bob rotation if Locomotion's first person animations are enabled.
     @Redirect(
-            method = "renderHandsWithItems",
+            method = "submitHandsWithItems",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionfc;)V")
     )
     public void removeVanillaCameraBob(PoseStack instance, Quaternionfc pose) {
@@ -60,7 +60,7 @@ public class MixinItemInHandRenderer {
 
     // Cancel rendering the vanilla hand with item if Locomotion's first person animations are enabled.
     @Inject(
-            method = "renderArmWithItem",
+            method = "submitArmWithItem",
             at = @At("HEAD"),
             cancellable = true
     )

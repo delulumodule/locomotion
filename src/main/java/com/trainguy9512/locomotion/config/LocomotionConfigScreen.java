@@ -7,6 +7,7 @@ import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.impl.controller.TickBoxControllerBuilderImpl;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -242,7 +243,7 @@ public class LocomotionConfigScreen {
                         .build());
 
         for (BlockEntityType<?> blockEntityType : JointAnimatorRegistry.getRegisteredBlockEntities()) {
-            Identifier blockEntityTypeIdentifier = BlockEntityType.getKey(blockEntityType);
+            Identifier blockEntityTypeIdentifier = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntityType);
             assert blockEntityTypeIdentifier != null;
             blockTogglesBuilder.option(Option.<Boolean>createBuilder()
                     .name(Component.translatable("block." + blockEntityTypeIdentifier.toLanguageKey()))

@@ -8,6 +8,7 @@ import com.trainguy9512.locomotion.animation.animator.JointAnimatorRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,10 +25,10 @@ public abstract class MixinGameRenderer {
      * Computes and saves the interpolated animation pose prior to rendering.
      */
     @Inject(
-            method = "renderLevel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;extractCamera(F)V")
+            method = "extract",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;extractCamera(Lnet/minecraft/client/DeltaTracker;FF)V")
     )
-    private void computePosePriorToRendering(DeltaTracker deltaTracker, CallbackInfo ci){
+    private void computePosePriorToRendering(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci){
         if (LocomotionMain.CONFIG.data().firstPersonPlayer.enableRenderer) {
             JointAnimatorDispatcher jointAnimatorDispatcher = JointAnimatorDispatcher.getInstance();
             jointAnimatorDispatcher.getFirstPersonPlayerDataContainer().ifPresent(dataContainer ->
@@ -45,7 +46,7 @@ public abstract class MixinGameRenderer {
             method = "bobHurt",
             at = @At("HEAD")
     )
-    private void addCameraRotation(PoseStack poseStack, float partialTicks, CallbackInfo ci){
+    private void addCameraRotation(CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci){
         if (LocomotionMain.CONFIG.data().firstPersonPlayer.enableRenderer) {
             ((FirstPersonPlayerRendererGetter)this.minecraft.getEntityRenderDispatcher()).locomotion$getFirstPersonPlayerRenderer().ifPresent(firstPersonPlayerRenderer -> firstPersonPlayerRenderer.transformCamera(poseStack));
         }
@@ -61,7 +62,7 @@ public abstract class MixinGameRenderer {
             at = @At(value = "HEAD"),
             cancellable = true
     )
-    private void removeViewBobbing(PoseStack poseStack, float partialTicks, CallbackInfo ci){
+    private void removeViewBobbing(CameraRenderState cameraState, PoseStack poseStack, CallbackInfo ci){
         if (LocomotionMain.CONFIG.data().firstPersonPlayer.enableRenderer) {
             ci.cancel();
         }

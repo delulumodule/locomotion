@@ -1,71 +1,85 @@
-@file:Suppress("UnstableApiUsage")
+import net.fabricmc.loom.task.prod.ClientProductionRunTask
 
 plugins {
-	id("dev.architectury.loom")
-	id("architectury-plugin")
+    id("net.fabricmc.fabric-loom") version "1.17.21"
 }
 
-val minecraft = stonecutter.current.version
-
-version = "${prop("mod.version")}+$minecraft-playtesting"
-base {
-	archivesName.set("${prop("mod.id")}-common")
-}
-
-architectury.common(stonecutter.tree.branches.mapNotNull {
-	if (stonecutter.current.project !in it) null
-	else it.project.prop("loom.platform")
-})
-
-loom {
-	silentMojangMappingsLicense()
-	accessWidenerPath = rootProject.file("src/main/resources/${prop("mod.id")}.accesswidener")
-
-	decompilers {
-		get("vineflower").apply { // Adds names to lambdas - useful for mixins
-			options.put("mark-corresponding-synthetics", "1")
-		}
-	}
-}
+version = "${property("mod.version")}+26.2-playtesting"
+group = property("mod.group")!!
+base.archivesName.set("locomotion-fabric")
 
 repositories {
-	maven("https://maven.parchmentmc.org/")
-
-	maven("https://maven.terraformersmc.com/")
-	maven("https://maven.isxander.dev/releases")
-	maven("https://api.modrinth.com/maven")
-	maven {
-		name = "Gegy"
-		url = uri("https://maven.gegy.dev/releases/")
-	}
+    maven("https://maven.terraformersmc.com/")
+    maven("https://maven.isxander.dev/releases")
 }
 
 dependencies {
-	minecraft("com.mojang:minecraft:$minecraft")
-	mappings(loom.layered {
-		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-${versionProp("parchment_minecraft_version")}:${versionProp("parchment_mappings_version")}@zip")
-//		mappings("dev.lambdaurora:${versionProp("yalmm")}")
-	})
-	modImplementation("net.fabricmc:fabric-loader:${versionProp("fabric_loader")}")
-
-	// Mod implementations
-	modCompileOnly("dev.isxander:yet-another-config-lib:${versionProp("yacl_version")}-fabric")
+    minecraft("com.mojang:minecraft:26.2")
+    implementation("net.fabricmc:fabric-loader:0.19.3")
+    implementation("net.fabricmc.fabric-api:fabric-api:0.154.2+26.2")
+    compileOnly("dev.isxander:yet-another-config-lib:3.9.5+26.2-fabric")
+    compileOnly("com.terraformersmc:modmenu:20.0.1")
 }
 
-tasks.processResources {
-	applyProperties(project, listOf("${prop("mod.id")}-common.mixin.json"))
+sourceSets.main {
+    java.srcDir("fabric/src/main/java")
+    resources.srcDir("fabric/src/main/resources")
 }
 
 java {
-	withSourcesJar()
-	val java = if (stonecutter.eval(minecraft, ">=1.20.5"))
-		JavaVersion.VERSION_21 else JavaVersion.VERSION_17
-	targetCompatibility = java
-	sourceCompatibility = java
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+    withSourcesJar()
 }
 
-tasks.build {
-	group = "versioned"
-	description = "Must run through 'chiseledBuild'"
+tasks.processResources {
+    val props = mapOf(
+        "mod_id" to project.property("mod.id"),
+        "mod_version" to project.version,
+        "mod_name" to project.property("mod.name"),
+        "mod_description" to project.property("mod.description"),
+        "fabric_loader_version" to "0.19.3",
+        "minecraft_version" to "26.2"
+    )
+    inputs.properties(props)
+    filesMatching("fabric.mod.json") { expand(props) }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "locomotion-test"
+        enableGameTests = false
+        enableClientGameTests = true
+    }
+}
+
+val gametestJar by tasks.registering(Jar::class) {
+    from(sourceSets["gametest"].output)
+    archiveClassifier.set("gametest")
+}
+
+dependencies {
+    "productionRuntimeMods"("net.fabricmc.fabric-api:fabric-api:0.154.2+26.2")
+    "productionRuntimeMods"(fabricApi.module("fabric-client-gametest-api-v1", "0.154.2+26.2"))
+}
+
+tasks.register<ClientProductionRunTask>("runProductionClientGameTest") {
+    mods.from(gametestJar)
+    jvmArgs.add("-Dfabric.client.gametest")
+    jvmArgs.add("-Dfabric.client.gametest.disableNetworkSynchronizer=true")
+    runDir.set(layout.buildDirectory.dir("run/productionClientGameTest"))
+    useXVFB.set(false)
+
+    providers.gradleProperty("testModpack").orNull?.let { pack ->
+        mods.from(fileTree("$pack/mods") {
+            include("*.jar")
+            exclude("fabric-api-*.jar", "locomotion-*.jar")
+        })
+        doFirst {
+            copy {
+                from("$pack/config")
+                into(runDir.dir("config"))
+            }
+        }
+    }
 }

@@ -238,7 +238,7 @@ public class FirstPersonJointAnimator implements LivingEntityJointAnimator<Local
         driverContainer.getDriver(FirstPersonDrivers.IS_CROUCHING).setValue(player.isCrouching());
         driverContainer.getDriver(FirstPersonDrivers.IS_UNDERWATER).setValue(player.isUnderWater() || (player.isInWater() && !player.onGround()));
         driverContainer.getDriver(FirstPersonDrivers.IS_PASSENGER).setValue(player.isPassenger());
-        driverContainer.getDriver(FirstPersonDrivers.HAS_SCREEN_OPEN).setValue(Minecraft.getInstance().screen != null);
+        driverContainer.getDriver(FirstPersonDrivers.HAS_SCREEN_OPEN).setValue(Minecraft.getInstance().gui.screen() != null);
 
         boolean isSwimmingUnderwater = player.getPose() == Pose.SWIMMING
                 && player.isInWater()

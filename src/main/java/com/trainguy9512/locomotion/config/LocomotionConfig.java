@@ -16,12 +16,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -49,25 +50,25 @@ public class LocomotionConfig {
     }
 
     public void load() {
-        if (Files.exists(CONFIG_FILE_PATH)) {
-            try (FileReader reader = new FileReader(CONFIG_FILE_PATH.toFile())) {
-                this.configData = GSON.fromJson(reader, LocomotionConfig.Data.class);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load locomotion config file", e);
-            }
-        } else {
-            configData = new LocomotionConfig.Data();
+        try (var reader = Files.newBufferedReader(CONFIG_FILE_PATH)) {
+            this.configData = Objects.requireNonNull(GSON.fromJson(reader, Data.class), "Locomotion config must not be null");
+        } catch (NoSuchFileException e) {
+            this.configData = new Data();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load locomotion config file", e);
         }
         save();
 
     }
 
     public void save() {
-        try (BufferedWriter writer = Files.newBufferedWriter(CONFIG_FILE_PATH)) {
-            writer.write(GSON.toJson(this.configData));
-//            LocomotionMain.LOGGER.info("Saved config to path {}", CONFIG_FILE_PATH);
-        } catch (Exception e) {
-            LOGGER.error("Failed to write config to path {}", CONFIG_FILE_PATH.toAbsolutePath());
+        try {
+            Files.createDirectories(CONFIG_FILE_PATH.getParent());
+            try (BufferedWriter writer = Files.newBufferedWriter(CONFIG_FILE_PATH)) {
+                writer.write(GSON.toJson(this.configData));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write locomotion config file", e);
         }
         JointAnimatorDispatcher.getInstance().reInitializeData();
     }
@@ -115,7 +116,7 @@ public class LocomotionConfig {
             return LocomotionConfigScreen::createConfigScreen;
         } else {
             return parent -> new AlertScreen(
-                    () -> Minecraft.getInstance().setScreen(parent),
+                    () -> Minecraft.getInstance().gui.setScreen(parent),
                     Component.translatable("locomotion.config.yacl_not_found.header"),
                     Component.translatable("locomotion.config.yacl_not_found.description"),
                     Component.translatable("locomotion.config.yacl_not_found.close"),

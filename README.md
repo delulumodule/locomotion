@@ -7,6 +7,14 @@ Locomotion is a Minecraft: Java mod centered around giving the game's entities a
 > **Warning!**
 > This project is still in heavy development! You are free to compile yourself and try it out, but keep in mind that there will be missing animations, placeholders, and debugging visuals that will not look correct in a normal gameplay context.
 
+## Fabric 26.2 port
+
+This branch targets Minecraft **26.2**, **Fabric Loader 0.19.3+**, and **Java 25**. Install Fabric API for 26.2 alongside the built jar. Mod Menu and Yet Another Config Lib (YACL) for 26.2 are optional and enable the configuration screen. The older Forge and NeoForge source directories are not part of this Fabric build.
+
+Build with `./gradlew build` using JDK 25, or `nix shell nixpkgs#jdk25 --command ./gradlew build`. The playable jar is `build/libs/locomotion-fabric-0.1.12+26.2-playtesting.jar`; the `-sources.jar` is for development. Copy the playable jar into your Prism instance's `minecraft/mods` directory.
+
+Run `./gradlew runClientGameTest` to audit mixins and test a disposable singleplayer world, movement, held items, chest/shulker interactions, third-person rendering, and the first-person renderer toggle. On a headless Linux machine, use `xvfb-run -a ./gradlew runClientGameTest`. Screenshots and logs are saved under `build/run/clientGameTest/`. To test the packaged jar with an existing mod pack, run `./gradlew runProductionClientGameTest -PtestModpack="/path/to/instance/minecraft"` (prefix with `xvfb-run -a` when headless). This copies the pack configuration into `build/run/productionClientGameTest/` and loads its mods without opening its saved worlds.
+
 ## 📜 Planned Features
 
 - 🟩 Complete

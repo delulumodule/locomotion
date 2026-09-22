@@ -1,5 +1,6 @@
 package com.trainguy9512.locomotion.animation.animator.entity.firstperson.handpose;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.trainguy9512.locomotion.LocomotionMain;
 import com.trainguy9512.locomotion.animation.animator.entity.firstperson.FirstPersonAnimationSequences;
 import com.trainguy9512.locomotion.animation.animator.entity.firstperson.FirstPersonDrivers;
@@ -9,8 +10,8 @@ import com.trainguy9512.locomotion.animation.pose.function.*;
 import com.trainguy9512.locomotion.animation.pose.function.cache.CachedPoseContainer;
 import com.trainguy9512.locomotion.render.ItemRenderType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -114,7 +115,7 @@ public class FirstPersonGenericItems {
     );
 
     public static final List<TagKey<Item>> BLOCK_ITEM_TAG_OVERRIDES = List.of(
-            ItemTags.COPPER_CHESTS,
+            BlockItemTags.COPPER_CHESTS.item(),
             ItemTags.SHULKER_BOXES,
             ItemTags.SKULLS,
             ItemTags.BEDS
@@ -140,7 +141,7 @@ public class FirstPersonGenericItems {
     }
 
     private static boolean isDoorItem(ItemStack itemStack) {
-        return itemStack.is(ItemTags.DOORS);
+        return itemStack.is(BlockItemTags.DOORS.item());
     }
 
     public static Identifier getCurrentBasePose(DriverGetter dataContainer, InteractionHand hand) {
