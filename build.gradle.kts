@@ -4,7 +4,7 @@ plugins {
     id("net.fabricmc.fabric-loom") version "1.17.21"
 }
 
-version = "${property("mod.version")}+26.2-playtesting"
+version = "${property("mod.version")}+26.2"
 group = property("mod.group")!!
 base.archivesName.set("locomotion-fabric")
 

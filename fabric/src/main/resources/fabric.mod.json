@@ -9,6 +9,7 @@
     "James Pelter AKA Trainguy9512"
   ],
   "contributors": [
+    "delulumodule (Minecraft 26.2 Fabric port)",
     "Scott Smoker (Animation)",
     "Alex Ulrick (Animation)",
     "Micah Preciado (Animation)",
@@ -17,8 +18,8 @@
     "Marvin \"MineToBlend\" (Original keyframe structure and easement class help)"
   ],
   "contact": {
-    "homepage": "https://github.com/Trainguy9512/locomotion/",
-    "sources": "https://github.com/Trainguy9512/locomotion/"
+    "homepage": "https://github.com/delulumodule/locomotion/",
+    "sources": "https://github.com/delulumodule/locomotion/"
   },
 
   "license": "ARR",

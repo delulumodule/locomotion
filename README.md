@@ -1,6 +1,8 @@
-# 🚂 Locomotion
+# 🚂 Locomotion — unofficial Fabric 26.2 port
 
-(Formerly known as Trainguy's Animation Overhaul)
+This is an unofficial Fabric 26.2 port of [Locomotion by Trainguy9512](https://github.com/Trainguy9512/locomotion), formerly known as Trainguy's Animation Overhaul. The original authorship, credits, and All Rights Reserved license are unchanged. This fork is not an official upstream release.
+
+Download the playable jar from [this fork's releases](https://github.com/delulumodule/locomotion/releases).
 
 Locomotion is a Minecraft: Java mod centered around giving the game's entities and blocks complex gameplay-driven animations through a real-time animation system inspired by Unreal Engine's Animation Blueprints.
 
@@ -9,11 +11,13 @@ Locomotion is a Minecraft: Java mod centered around giving the game's entities a
 
 ## Fabric 26.2 port
 
-This branch targets Minecraft **26.2**, **Fabric Loader 0.19.3+**, and **Java 25**. Install Fabric API for 26.2 alongside the built jar. Mod Menu and Yet Another Config Lib (YACL) for 26.2 are optional and enable the configuration screen. The older Forge and NeoForge source directories are not part of this Fabric build.
+This branch targets Minecraft **26.2**, **Fabric Loader 0.19.3+**, and **Java 25**. Install Fabric API for 26.2 alongside the built jar. Mod Menu and Yet Another Config Lib (YACL) for 26.2 are optional and enable the configuration screen. The older Forge and NeoForge source directories are not part of this Fabric build. This port keeps Locomotion’s first-person and container animations; third-person player movement uses vanilla animations because the upstream third-person prototype only provides a fixed pose.
 
-Build with `./gradlew build` using JDK 25, or `nix shell nixpkgs#jdk25 --command ./gradlew build`. The playable jar is `build/libs/locomotion-fabric-0.1.12+26.2-playtesting.jar`; the `-sources.jar` is for development. Copy the playable jar into your Prism instance's `minecraft/mods` directory.
+Build with `./gradlew build` using JDK 25, or `nix shell nixpkgs#jdk25 --command ./gradlew build`. The playable jar is `build/libs/locomotion-fabric-0.1.12-port.1+26.2.jar`; the `-sources.jar` and `-gametest.jar` are development artifacts and should not be installed in a mod pack. Copy the playable jar into your Prism instance's `minecraft/mods` directory.
 
 Run `./gradlew runClientGameTest` to audit mixins and test a disposable singleplayer world, movement, held items, chest/shulker interactions, third-person rendering, and the first-person renderer toggle. On a headless Linux machine, use `xvfb-run -a ./gradlew runClientGameTest`. Screenshots and logs are saved under `build/run/clientGameTest/`. To test the packaged jar with an existing mod pack, run `./gradlew runProductionClientGameTest -PtestModpack="/path/to/instance/minecraft"` (prefix with `xvfb-run -a` when headless). This copies the pack configuration into `build/run/productionClientGameTest/` and loads its mods without opening its saved worlds.
+
+The sections below describe the upstream project, its plans, credits, and distribution restrictions. The Fabric 26.2 port details above take precedence for supported loaders and installation instructions.
 
 ## 📜 Planned Features
 
